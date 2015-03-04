@@ -43,7 +43,7 @@ def scale(params = {})
 	#assign Variables
 	mesh = params[:mesh]
 	factor = params[:factor]
-	vec = params[:vector].nil? ? (center_of mesh) : params[:vector]
+	vec = params[:vector].nil? ? (mesh.center) : params[:vector]
 	x = y = z = 1
 	if not factor.nil?
 		x = y = z = factor
@@ -63,54 +63,99 @@ def scale(params = {})
 	mesh = translate :mesh => mesh, :vector => vec
 end
 
-#Returns the Center Point of a TriMesh as Vector3
-def center_of(tri_mesh)
-	raise StandardError, "This is not a TriMesh" if !(tri_mesh.kind_of? TriMesh)
-	min_x = max_x = tri_mesh.vertices[0].x
-	min_y = max_y = tri_mesh.vertices[0].y
-	min_z = max_z = tri_mesh.vertices[0].z
-	tri_mesh.vertices.each do | vec |
-		min_x = [vec.x, min_x].min
-		min_y = [vec.y, min_y].min
-		min_z = [vec.z, min_z].min
-		max_x = [vec.x, max_x].max
-		max_y = [vec.y, max_y].max
-		max_z = [vec.z, max_z].max
-	end
-	return (((Vector3.new min_x, min_y, min_z) + (Vector3.new max_x, max_y, max_z)) * 0.5)
-end
-
 # :vector is optional
 # :mesh => TriMesh, :degree => Float, :axis => Symbol/Line, :vector => Vector3
 def rotate(params = {})
 	raise StandardError, ":mesh is nil or not a TriMesh" if (params[:mesh].nil? or !(params[:mesh].kind_of? TriMesh))
 	raise StandardError, ":degree is nil or not a Number" if (params[:degree].nil? or !(params[:degree].is_a? Numeric))
-	raise StandardError, "Define :axis with :x, :y, :z or as a Line" if (params[:axis].nil?) or not (params[:axis].kind_of? Symbol) or not (params[:axis].kind_of? Line)
+	raise StandardError, "Define :axis with :x, :y, :z or as a Line" if (params[:axis].nil?) or (not (params[:axis].kind_of? Symbol) and not (params[:axis].kind_of? Line))
 	raise StandardError, ":vector is not a Vector3" if not (params[:vector].kind_of? Vector3 ) and not params[:vector].nil?
 	raise StandardError, "Define :axis with :x, :y, :z" if (params[:axis].kind_of? Symbol) and ((params[:axis] != :x) and (params[:axis] != :y) and (params[:axis] != :z))
 	raise StandardError, "No vector is allowed if Line is defined" if not (params[:vector].nil?) and (params[:axis].kind_of? Line)
 
 	#assign Variables
 	mesh   = params[:mesh]
-	degree = params[:degree]
+	degree = params[:degree] * Math::PI / 180
 	axis   = params[:axis]
-	(vec = params[:vector].nil? ? (center_of mesh) : params[:vector]) if axis.kind_of Symbol
+	(vec = params[:vector].nil? ? (mesh.center) : params[:vector]) if axis.kind_of? Symbol
 
 	#Do Rotation
-	new_vecs = Array.new
+	# Math.cos( degree * Math::PI/180 )
 	if axis.kind_of? Symbol
+		mesh = translate :mesh => mesh, :vector => (vec * -1)
+		new_vecs = Array.new
 		if axis == :x 
-
+			mesh.vertices.each do | vector |
+				y = vector.y * Math.cos(degree) - vector.z * Math.sin(degree)
+				z = vector.y * Math.sin(degree) + vector.z * Math.cos(degree)
+				new_vecs << (Vector3.new vector.x, y, z)
+			end
 		elsif axis == :y 
-
-		elsif axis == :z
-
+			mesh.vertices.each do | vector |
+				x = vector.z * Math.sin(degree) + vector.x * Math.cos(degree)
+				z = vector.z * Math.cos(degree) - vector.x * Math.sin(degree)
+				new_vecs << (Vector3.new x, vector.y, z)
+			end
+		elsif axis == :z 
+			mesh.vertices.each do | vector |
+				x = vector.x * Math.cos(degree) - vector.y * Math.sin(degree)
+				y = vector.x * Math.sin(degree) + vector.y * Math.cos(degree)
+				new_vecs << (Vector3.new x, y, vector.z)
+			end
 		end
+		mesh = TriMesh.new new_vecs, mesh.tri_indices
+		mesh = translate :mesh => mesh, :vector => vec
 	elsif axis.kind_of? Line
-
+		vec = axis.base_point
+		dir = axis.direction - vec
+		x_rot = Vector3.new(0, dir.y, dir.z).angle(dir) / Math::PI / 180
+		y_rot = Vector3.new(dir.x, 0, dir.z).angle(dir) / Math::PI / 180
+		mesh = translate :mesh => mesh, :vector => (vec * -1)
+		mesh = rotate :mesh => mesh, :axis => :x, :degree => -x_rot
+		mesh = rotate :mesh => mesh, :axis => :y, :degree => -y_rot
+		mesh = rotate :mesh => mesh, :axis => :z, :degree => degree
+		mesh = rotate :mesh => mesh, :axis => :y, :degree => y_rot
+		mesh = rotate :mesh => mesh, :axis => :x, :degree => x_rot
+		mesh = translate :mesh => mesh, :vector => vec
 	end
+	mesh
+end
 
-	# x is radiant
-	# Math.cos( x * Math::PI/180 )
-	# or Math.cos(360*Math::PI)??? <= Auf gar keinen Fall, immer ein vielfaches  von PI
+
+# :vector is optional
+#:mesh => TriMesh, :axis => Symbol, :vetor => Vector3
+def mirror(params = {})
+	raise StandardError, ":mesh is nil or not a TriMesh" if (params[:mesh].nil? || !(params[:mesh].kind_of? TriMesh))
+	raise StandardError, ":axis is nil or not a Symbol" if (params[:axis].nil? || !(params[:axis].kind_of? Symbol))
+	raise StandardError, ":axis should be :x :y or :z" if (params[:axis] != :x) and (params[:axis] != :y) and (params[:axis] != :z)
+	raise StandardError, ":vector is not a Vector3" if not (params[:vector].kind_of? Vector3 ) and not params[:vector].nil?
+
+	#assign Values
+	mesh = params[:mesh]
+	axis = params[:axis]
+	vec = params[:vector].nil? ? (mesh.center) : params[:vector]
+
+	#Do Mirror
+	mesh = translate :mesh => mesh, :vector => (vec * -1)
+	new_vecs = Array.new
+	if axis == :x
+		mesh.vertices.each do | v |
+			new_vecs << Vector3.new( -v.x, v.y, v.z)
+		end
+	elsif axis == :y 
+		mesh.vertices.each do | v |
+			new_vecs << Vector3.new( v.x, -v.y, v.z)
+		end
+	elsif axis == :z
+		mesh.vertices.each do | v |
+			new_vecs << Vector3.new( v.x, v.y, -v.z)
+		end
+	end
+	#Reverse Indicies!
+	new_indicies = Array.new
+	mesh.tri_indices.each do | i |
+		new_indicies << [i[0], i[2], i[1]]
+	end
+	mesh = TriMesh.new new_vecs, new_indicies
+	mesh = translate :mesh => mesh, :vector => vec
 end

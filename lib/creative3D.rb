@@ -13,7 +13,40 @@ module Creative3D
 		Creative3D::VERSION
 	end
 
-	def self.test 
+	def self.test_mirror
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		poly = stl.read :filename => "cube"
+
+		poly = mirror :mesh => poly, :axis => :z, :vector => Vector3.new(0,0,0)
+		puts "Axis Z"
+		poly.vertices.each { |v| puts v.to_s }
+		stl.write :filename => "mirror-quad", :mesh => poly
+
+		poly = mirror :mesh => poly, :axis => :y, :vector => Vector3.new(1,1,1)
+		puts "Axis Z"
+		poly.vertices.each { |v| puts v.to_s }		
+		stl.write :filename => "mirror-quad2", :mesh => poly
+	end
+
+	def self.test_rotate
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		poly = stl.read :filename => "cube"
+
+		poly1 = rotate :mesh => poly, :axis => :z, :degree => 45
+		puts "Axis Z from center"
+		poly1.vertices.each { |v| puts v.to_s }
+
+		b = Vector3.new(0, 0, 0)
+		d = Vector3.new(0, 0, 5)
+		line = Line.new b, d
+		poly1 = rotate :mesh => poly, :axis => line, :degree => 45
+		puts "Axis Z"
+		poly1.vertices.each { |v| puts v.to_s }
+	end
+
+	def self.test_scale
 		stl = STL.new
 		stl.set_workspace("C:/ruby3d/exampleSTL/")
 		poly = stl.read :filename => "cube"

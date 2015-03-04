@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Creative3D::VERSION
   spec.authors       = ["Raoul"]
   spec.email         = ["raoulstraczowski@googlemail.com"]
-  spec.description   = "Beschreibung kommt noch"
+  spec.description   = "A library for rapid prototyping and 3D Modelling"
   spec.summary       = "Summary kommt auch noch"
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/straczowski/creative3D"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
