@@ -1,4 +1,4 @@
-Copyright (c) 2015 Raoul
+Copyright (c) 2015 Raoul Straczowski
 
 MIT License
 
