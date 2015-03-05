@@ -13,17 +13,54 @@ module Creative3D
 		Creative3D::VERSION
 	end
 
+	def self.test_transformations
+		test_stretch
+		test_array
+		test_mirror
+		test_rotate
+		test_scale
+		test_translate
+	end
+
+	def self.test_stretch
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		poly = stl.read :filename => "cube"
+		
+		meshes = Array.new
+
+		poly = (stretch poly, :axis => :z, :factor => 5, :vector => Vector3.new(0,0,0))
+		meshes << poly 
+		meshes << (rotate poly, :axis => :x, :degree => 90)
+
+		stl.write :filename => "cross", :mesh => meshes
+	end
+
+	def self.test_array
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		poly = stl.read :filename => "cube"
+
+		meshes = Array.new
+
+		meshes << poly
+		meshes << (translate poly, :vector => Vector3.new(-1.5, 0, 0))
+		meshes << (translate poly, :vector => Vector3.new(0, 1.5, 0))
+
+		stl.write :filename => "3cubes", :mesh => meshes
+	end
+
 	def self.test_mirror
 		stl = STL.new
 		stl.set_workspace("C:/ruby3d/exampleSTL/")
 		poly = stl.read :filename => "cube"
 
-		poly = mirror :mesh => poly, :axis => :z, :vector => Vector3.new(0,0,0)
+		poly = mirror poly, :axis => :z, :vector => Vector3.new(0,0,0)
 		puts "Axis Z"
 		poly.vertices.each { |v| puts v.to_s }
 		stl.write :filename => "mirror-quad", :mesh => poly
 
-		poly = mirror :mesh => poly, :axis => :y, :vector => Vector3.new(1,1,1)
+		poly = mirror poly, :axis => :y, :vector => Vector3.new(1,1,1)
 		puts "Axis Z"
 		poly.vertices.each { |v| puts v.to_s }		
 		stl.write :filename => "mirror-quad2", :mesh => poly
@@ -34,14 +71,14 @@ module Creative3D
 		stl.set_workspace("C:/ruby3d/exampleSTL/")
 		poly = stl.read :filename => "cube"
 
-		poly1 = rotate :mesh => poly, :axis => :z, :degree => 45
+		poly1 = rotate poly, :axis => :z, :degree => 45
 		puts "Axis Z from center"
 		poly1.vertices.each { |v| puts v.to_s }
 
 		b = Vector3.new(0, 0, 0)
 		d = Vector3.new(0, 0, 5)
 		line = Line.new b, d
-		poly1 = rotate :mesh => poly, :axis => line, :degree => 45
+		poly1 = rotate poly, :axis => line, :degree => 45
 		puts "Axis Z"
 		poly1.vertices.each { |v| puts v.to_s }
 	end
@@ -51,16 +88,16 @@ module Creative3D
 		stl.set_workspace("C:/ruby3d/exampleSTL/")
 		poly = stl.read :filename => "cube"
 
-		poly = scale :mesh => poly, :factor => 0.5
+		poly = scale poly, :factor => 0.5
 		puts "Half size"
 		poly.vertices.each { |v| puts v.to_s }
 
 		poly = stl.read :filename => "cube"
-		poly = scale :mesh => poly, :z => 5, :vector => (Vector3.new 0, 0, 0)
+		poly = scale poly, :z => 5, :vector => (Vector3.new 0, 0, 0)
 		stl.write :filename => "quad1", :mesh => poly 
 
 		poly = stl.read :filename => "cube"
-		poly = scale :mesh => poly, :z => 5
+		poly = scale poly, :z => 5
 		stl.write :filename => "quad2", :mesh => poly 
 	end
 
@@ -71,15 +108,15 @@ module Creative3D
 
 		puts "First"
 		poly.vertices.each { |v| puts v.to_s }
-		poly = translate :mesh => poly, :vector => Vector3.new(1, 1, 1)
+		poly = translate poly, :vector => Vector3.new(1, 1, 1)
 		puts "Second"
 		poly.vertices.each { |v| puts v.to_s }
 		puts "Einzeln"
-		poly = translate :mesh => poly, :x => -1
-		poly = translate :mesh => poly, :y => -1
-		poly = translate :mesh => poly, :z => -1
+		poly = translate poly, :x => -1
+		poly = translate poly, :y => -1
+		poly = translate poly, :z => -1
 		poly.vertices.each { |v| puts v.to_s }
-		#poly = translate :mesh => poly, :vector => Vector3.new(1, 1, 1), :z => -1  #raise Error
+		#poly = translate poly, :vector => Vector3.new(1, 1, 1), :z => -1  #raise Error
 
 	end
 

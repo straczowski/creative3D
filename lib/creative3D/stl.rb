@@ -17,14 +17,16 @@ class STL
 	end
 
 	# params is a Hash Array
-	# :filename => <String>, :mesh => <TriMesh>, :format => :ascii 
+	# :filename => <String>, :mesh => TriMesh/Array[TriMesh], :format => :ascii 
 	def write(params = {})
 		
-		raise StandardError, "argument :filename is nil or not a String" if (params[:filename].nil? || !(params[:filename].kind_of? String))
-		raise StandardError, "argument :mesh is nil or not a kind of TriMesh" if (params[:mesh].nil? || !(params[:mesh].kind_of? TriMesh))
+		raise StandardError, "argument :filename is nil or not a String" if (params[:filename].nil? or not(params[:filename].kind_of? String))
+		raise StandardError, "argument :mesh is nil or not a kind of TriMesh or Array of TriMeshs" if (params[:mesh].nil? or (not(params[:mesh].kind_of? TriMesh) and not (params[:mesh].kind_of? Array)) )
+
+		mesh =  (params[:mesh].kind_of? Array) ? (merge_mesh params[:mesh]) : (params[:mesh])
 
 		name 	  = params[:filename]
-		triangles = params[:mesh].triangles
+		triangles = mesh.triangles
 		format    = params[:format]
 
 		File.open( (@workspace+name+".stl") , 'w') do |file|
@@ -169,6 +171,23 @@ private
 		end
 
 		return TriMesh.new vecs, indicies
+	end
+
+	#Merge an Array of TriMesh's to 1 TriMesh Object
+	def merge_mesh(mesh_array)
+		all_vecs = Array.new
+		all_indices = Array.new
+		index = 0
+		mesh_array.each do | mesh |
+			mesh.vertices.each do | v |
+				all_vecs << v
+			end
+			mesh.tri_indices.each do | i |
+				all_indices << ([(i[0]+index), (i[1]+index), (i[2]+index)])
+			end
+			index = all_vecs.length
+		end
+		TriMesh.new all_vecs, all_indices
 	end
 
 end
