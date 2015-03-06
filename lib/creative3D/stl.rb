@@ -28,10 +28,9 @@ class STL
 		name 	  = params[:filename]
 		triangles = mesh.triangles
 		format    = params[:format]
-
-		File.open( (@workspace+name+".stl") , 'w') do |file|
-
-			if format == :ascii
+		
+		if format == :ascii
+			File.open( (@workspace+name+".stl") , 'w') do |file|
 				file.puts "solid #{name}"
 				
 				triangles.each do | t |
@@ -49,9 +48,15 @@ class STL
 					file.puts '    endfacet'
 				end
 				file.puts 'endsolid'
-			else 
+			end
+		else
+			File.open( (@workspace+name+".stl") , 'wb') do |file| 
 				file.write 'STL #{name}'.ljust(80, "\0")
-				file.write [triangles.length].pack('V')	
+				#file.write [triangles.length].pack('V')
+				file.write [triangles.length].pack('I')
+				#file.write [triangles.length.to_s(16)].pack("H*")	
+				#file.write("FFFF")
+				#tri_count = 0
 
 				triangles.each do | t |
 				    file.write t.normal.to_ary.pack("FFF")
@@ -60,10 +65,14 @@ class STL
 						file.write v.to_ary.pack("FFF")
 				    end
 				    file.write "\0\0"
+				    #tri_count += 1
 				end
+			    #file.seek(80, IO::SEEK_SET)
+			    #file.write([ tri_count ].pack("V"))
+			    #file.close
 			end
-
 		end
+		"Finish"
 	end	
 
 
@@ -102,6 +111,7 @@ class STL
 			    data << {:normal => normal, :vertices => [a, b, c]}
 			end
 		else
+			file = File.new((@workspace+name+".stl") , 'rb')
 			file.seek(80, IO::SEEK_SET)
 		    triCount = file.read(4).unpack('V')[0]
 		    triCount.times do |triNdx|

@@ -1,5 +1,5 @@
-require "gmath3D"
-include GMath3D
+#require "gmath3D"
+#include GMath3D
 
 # Uses Parmeters for x, y, z if no vector is given
 # mesh => TriMesh, :vector => Vector3, :x => Float, :y => Float, :z => Float

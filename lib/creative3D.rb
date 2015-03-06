@@ -1,10 +1,13 @@
+require "gmath3D"
+include GMath3D
+
 require "creative3D/version"
 require "creative3D/transform"
 require "creative3D/stl"
 
-require "gmath3D"
-include GMath3D
-
+require "creative3D/primitives/cuboid"
+require "creative3D/primitives/cylinder"
+require "creative3D/primitives/sphere"
 #require 'stl'
 
 module Creative3D
@@ -13,6 +16,87 @@ module Creative3D
 		Creative3D::VERSION
 	end
 
+	def 
+
+	def self.test_big
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+
+		poly = Cylinder.new :height => 5, :segments => 60, :radius => 50
+		stl.write :filename => "big_cylinder", :mesh => poly
+
+		meshes = Array.new 
+		100.times do |i|
+			temp = Cuboid.new
+			meshes << (translate temp, :x => (i*1.5))
+		end
+		stl.write :filename => "cubs", :mesh => meshes
+		stl.write :filename => "cubs-ascii", :mesh => meshes, :format => :ascii
+	end
+
+	###### PRIMITIVES #######
+	def self.test_sphere
+		poly = Sphere.new :radius => 5, :longitudes => 2, :latitudes => 3
+		poly = Sphere.new :radius => 5, :longitudes => 8, :latitudes => 4
+		poly2 = Sphere.new :radius => 5 #PROBLEM bei binär!
+		#Ich denke Problem da Anzahl der Dreiecke nicht richtig konvertiert wird
+		poly2 = Sphere.new :radius => 5, :longitudes => 10, :latitudes => 10 #problem bei binär
+
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "sphere", :mesh => poly
+		stl.write :filename => "sphere2", :mesh => poly2
+		stl.write :filename => "sphere2-ascii", :mesh => poly2, :format => :ascii 
+
+		meshes = Array.new
+		meshes << (translate poly, :x => -10)
+		meshes << (poly2)
+		stl.write :filename => "multi", :mesh => meshes
+		stl.write :filename => "multi-ascii", :mesh => meshes, :format => :ascii
+	end
+
+	def self.test_cylinder
+		meshes = Array.new
+
+		poly = Cylinder.new :height => 10
+		meshes << poly
+
+		poly = Cylinder.new :height => 3, :segments => 3, :radius => 3, :position => Vector3.new(4, 0, 0)
+		meshes << poly
+
+		poly = Cylinder.new :position => Vector3.new(-4, 0, 0)
+		meshes << poly
+
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "cylinder", :mesh => meshes
+	end
+
+	def self.test_cuboid 
+		poly = Cuboid.new :vector => Vector3.new(5, 2, 1)
+		puts "Cuboid bei 0 vektor"
+		poly.vertices.each { |v| puts v.to_s }
+		poly = Cuboid.new 
+		puts "Einheitswürfel"
+		poly.vertices.each { |v| puts v.to_s }
+		poly = Cuboid.new :postion => Vector3.new(5, 2, 1)
+		puts "Einheitswürfel bei postion"
+		poly.vertices.each { |v| puts v.to_s }
+		poly = Cuboid.new :postion => Vector3.new(5, 2, 1), :width => 5
+		puts "Position und Width"
+		poly.vertices.each { |v| puts v.to_s }
+		poly = Cuboid.new :width => 10, :height => 1, :depth => 4
+		puts "Properties bei 0Vektor"
+		poly.vertices.each { |v| puts v.to_s }
+
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "cuboid", :mesh => poly
+
+	end
+	###### PRIMITIVES #######
+
+	###### TRANSFORMATIONS ######
 	def self.test_transformations
 		test_stretch
 		test_array
@@ -119,7 +203,11 @@ module Creative3D
 		#poly = translate poly, :vector => Vector3.new(1, 1, 1), :z => -1  #raise Error
 
 	end
+	###### TRANSFORMATIONS ######
 
+
+
+	###### BASICS ######
 	def self.test_triemesh
 		a = Vector3.new 5, 2, 4
 		b = Vector3.new 2, 6, 6
