@@ -1,7 +1,7 @@
 
 class Sphere < TriMesh
 
-	# :radius => Numeric, :longitudes => Numeric, :latitudes => Numeric, :postion => Vector3
+	# :radius => Numeric, :longitudes => Numeric, :latitudes => Numeric, :position => Vector3
 	def initialize(params = {})
 		raise StandardError, ":radius have to be a Numeric" if not params[:radius].nil? and not (params[:radius].is_a? Numeric)
 		raise StandardError, ":radius have to be greater than 0" if not params[:radius].nil? and not (params[:radius] > 0)
@@ -14,7 +14,7 @@ class Sphere < TriMesh
 		radius      = params[:radius].nil?     ? 1  : params[:radius]	
 		longitudes  = params[:longitudes].nil? ? 10 : (params[:longitudes])
 		latitudes   = params[:latitudes].nil?  ? 10 : (params[:latitudes])
-		vec = params[:postion].nil? ? Vector3.new(0,0,0) : params[:postion]
+		vec = params[:position].nil? ? Vector3.new(0,0,0) : params[:position]
 
 		vertices = Array.new
 		indices  = Array.new

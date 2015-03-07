@@ -8,33 +8,36 @@ require "creative3D/stl"
 require "creative3D/primitives/cuboid"
 require "creative3D/primitives/cylinder"
 require "creative3D/primitives/sphere"
+require "creative3D/primitives/stick"
 #require 'stl'
 
 module Creative3D
 
 	def self.version
 		Creative3D::VERSION
-	end
-
-	def 
-
-	def self.test_big
-		stl = STL.new
-		stl.set_workspace("C:/ruby3d/exampleSTL/")
-
-		poly = Cylinder.new :height => 5, :segments => 60, :radius => 50
-		stl.write :filename => "big_cylinder", :mesh => poly
-
-		meshes = Array.new 
-		100.times do |i|
-			temp = Cuboid.new
-			meshes << (translate temp, :x => (i*1.5))
-		end
-		stl.write :filename => "cubs", :mesh => meshes
-		stl.write :filename => "cubs-ascii", :mesh => meshes, :format => :ascii
-	end
+	end	
 
 	###### PRIMITIVES #######
+	def self.test_stick
+		meshes = Array.new
+		vec1 = Vector3.new(0, 10, 1)
+		vec2 = Vector3.new(10, 0, 1)
+		meshes << (Sphere.new :radius => 3, :position => vec1)
+		meshes << (Sphere.new :radius => 3, :position => vec2)
+		meshes << (Stick.new (FiniteLine.new(vec1,vec2)))
+
+
+		vec3 = Vector3.new(-4, 10, -3)
+		vec4 = Vector3.new(4,-3, 5)
+		meshes << (Sphere.new :radius => 3, :position => vec3)
+		meshes << (Sphere.new :radius => 3, :position => vec4)
+		meshes << (Stick.new (FiniteLine.new(vec3,vec4)))
+
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "stickSphere", :mesh => meshes
+	end
+
 	def self.test_sphere
 		poly = Sphere.new :radius => 5, :longitudes => 2, :latitudes => 3
 		poly = Sphere.new :radius => 5, :longitudes => 8, :latitudes => 4
@@ -79,10 +82,10 @@ module Creative3D
 		poly = Cuboid.new 
 		puts "Einheitswürfel"
 		poly.vertices.each { |v| puts v.to_s }
-		poly = Cuboid.new :postion => Vector3.new(5, 2, 1)
-		puts "Einheitswürfel bei postion"
+		poly = Cuboid.new :position => Vector3.new(5, 2, 1)
+		puts "Einheitswürfel bei position"
 		poly.vertices.each { |v| puts v.to_s }
-		poly = Cuboid.new :postion => Vector3.new(5, 2, 1), :width => 5
+		poly = Cuboid.new :position => Vector3.new(5, 2, 1), :width => 5
 		puts "Position und Width"
 		poly.vertices.each { |v| puts v.to_s }
 		poly = Cuboid.new :width => 10, :height => 1, :depth => 4
@@ -229,6 +232,42 @@ module Creative3D
 		stl.write :filename => "cube-copy", :mesh => poly 
 		poly = stl.read :filename => "cube-copy" 
 		stl.write :filename => "cube-copy-copy", :mesh => poly 
+	end
+
+	def self.test_binary
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+
+		poly = Cuboid.new
+		stl.write :filename => "cube", :mesh => poly
+		poly = stl.read :filename => "cube"
+		stl.write :filename => "cube-ascii", :mesh => poly, :format => :ascii
+
+		meshes = Array.new 
+		50.times do |i|
+			temp = Cuboid.new
+			meshes << (translate temp, :x => (i*1.5))
+		end
+		stl.write :filename => "cubs", :mesh => meshes
+		meshes = stl.read :filename => "cubs"
+		stl.write :filename => "cubs-ascii", :mesh => meshes, :format => :ascii
+
+	end
+
+	def self.test_big
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+
+		poly = Cylinder.new :height => 5, :segments => 60, :radius => 50
+		stl.write :filename => "big_cylinder", :mesh => poly
+
+		meshes = Array.new 
+		100.times do |i|
+			temp = Cuboid.new
+			meshes << (translate temp, :x => (i*1.5))
+		end
+		stl.write :filename => "cubs", :mesh => meshes
+		stl.write :filename => "cubs-ascii", :mesh => meshes, :format => :ascii
 	end
 
 end
