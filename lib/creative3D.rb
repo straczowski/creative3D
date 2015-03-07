@@ -9,13 +9,22 @@ require "creative3D/primitives/cuboid"
 require "creative3D/primitives/cylinder"
 require "creative3D/primitives/sphere"
 require "creative3D/primitives/stick"
-#require 'stl'
+require "creative3D/primitives/extrude"
+
+#require 'csg'
 
 module Creative3D
 
 	def self.version
 		Creative3D::VERSION
 	end	
+
+	def self.test_tri
+		ary = [Vector3.new(0,0,0),Vector3.new(1,5,0),Vector3.new(4,7,0),Vector3.new(5,-2,0), Vector3.new(3,0,0),Vector3.new(-2,-2,0)]
+		poly = Extrude.triangulate(ary)
+		poly.each { |v| puts v.to_s }
+	end
+
 
 	###### PRIMITIVES #######
 	def self.test_stick
