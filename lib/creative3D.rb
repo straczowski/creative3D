@@ -20,9 +20,13 @@ module Creative3D
 	end	
 
 	def self.test_tri
-		ary = [Vector3.new(0,0,0),Vector3.new(1,5,0),Vector3.new(4,7,0),Vector3.new(5,-2,0), Vector3.new(3,0,0),Vector3.new(-2,-2,0)]
-		poly = Extrude.triangulate(ary)
-		poly.each { |v| puts v.to_s }
+		ary = Array.new
+		ary = [ [0,0], [1,5], [4,7], [5,-2], [3,0], [2,-2] ]
+		poly = Extrude.new ary
+		
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "extrude", :mesh => poly
 	end
 
 

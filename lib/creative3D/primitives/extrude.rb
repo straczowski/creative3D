@@ -3,12 +3,40 @@
 
 class Extrude < TriMesh
 
-	#@tpolygon = Array.new
-	@ttriangle = Array.new(3)
-	@ttriangles = Array.new 
 
-	def initialize (vecs, params={})
+	def initialize (vecs2, params={})
 
+		z = params[:height].nil? ? 1 : params[:height]
+
+		vertices = Array.new
+		vecs2.each do |v|
+			vertices << (Vector3.new v[0], v[1], 0)
+		end
+
+		j = vecs2.length
+		indices = triangulate vecs2
+
+		vecs2.each do |v|
+			vertices << (Vector3.new v[0], v[1], z)
+		end
+
+		
+		clone = indices.clone
+		clone.each_with_index do |index, i|
+			#Back
+			indices << [index[0]+j, index[2]+j, index[1]+j]
+		end
+		vecs2.each_with_index do |v,i|
+			if( i == j-1)
+				indices << [i, 0, j+i]
+				indices << [0, j, j+i]
+			else
+				indices << [i,   i+1,   j+i]
+				indices << [i+1, j+i+1, j+i] 
+			end
+		end
+
+		super(vertices, indices)
 	end
 
 	class TriNode
@@ -22,53 +50,41 @@ class Extrude < TriMesh
 		end
 	end
 
-	def self.triangulate tpolygon
+	def triangulate vecs2
 		lst = Array.new
 		atriangles = Array.new
 
-		#lst = tpolygon.clone
-		tpolygon.each_with_index do| v, i|
-			lst << (TriNode.new v.x, v.y, i)
+		vecs2.each_with_index do| v, i|
+			lst << (TriNode.new v[0], v[1], i)
 		end
-
-		puts "Start triangulate"
 
 		i = 0
 		lastear = -1
 		while (lastear <= lst.length*2) and (lst.length != 3)   ##repeat
 			lastear = lastear + 1
 
-			p1 = lst[Extrude.get_item(i-1, lst.length)]
-			p  = lst[Extrude.get_item(i  , lst.length)]
-			p2 = lst[Extrude.get_item(i+1, lst.length)]
+			p1 = lst[get_item(i-1, lst.length)]
+			p  = lst[get_item(i  , lst.length)]
+			p2 = lst[get_item(i+1, lst.length)]
 
 			l = ((p1.x - p.x) * (p2.y - p.y) - (p1.y - p.y) * (p2.x - p.x))
-
-			#puts "lastear = " + lastear.to_s
-			#puts "l = " + l.to_s + " on pos " + i.to_s
 
 			if l > 0 
 				in_triangle = false
 				2.upto(lst.length) do | j |
-					pt = lst[Extrude.get_item( i+j , lst.length)]
-					if Extrude.point_in_traingle(pt, p1, p, p2)
+					pt = lst[get_item( i+j , lst.length)]
+					if point_in_traingle(pt, p1, p, p2)
 						in_triangle = true
-						#puts "p" + p.index.to_s + " in Triangle " + p1.index.to_s + p.index.to_s + p2.index.to_s 
 					end
 				end
 
-				#puts "Not in triangle" if not in_triangle
-
 				if not in_triangle 
-					#SetLength(ATriangles, Length(ATriangles) + 1);
 					atriangles << Array.new(3)
-			        atriangles.last[0] = p1.index #Extrude.get_item(i-1, lst.length) #Vector3.new(p1.x, p1.y, 0);
-			        atriangles.last[1] = p.index  #Extrude.get_item(i  , lst.length) #Vector3.new(p.x, p.y, 0);
-			        atriangles.last[2] = p2.index #Extrude.get_item(i+1, lst.length) #Vector3.new(p2.x, p2.y, 0);
-			 		
-			 		#puts "count i = " + i.to_s
+			        atriangles.last[0] = p1.index 
+			        atriangles.last[1] = p.index  
+			        atriangles.last[2] = p2.index 
 			        
-			        lst.delete_at(Extrude.get_item(i, lst.length))
+			        lst.delete_at(get_item(i, lst.length))
 			 
 			        lastear = 0
 			 
@@ -81,34 +97,34 @@ class Extrude < TriMesh
 		end
 		
 		if lst.length == 3
-			p1 = lst[Extrude.get_item(0, lst.length)]
-			p  = lst[Extrude.get_item(1, lst.length)]
-			p2 = lst[Extrude.get_item(2, lst.length)]
+			p1 = lst[get_item(0, lst.length)]
+			p  = lst[get_item(1, lst.length)]
+			p2 = lst[get_item(2, lst.length)]
 			atriangles << Array.new(3)
-	        atriangles.last[0] = p1.index #Extrude.get_item(i-1, lst.length) #Vector3.new(p1.x, p1.y, 0);
-	        atriangles.last[1] = p.index  #Extrude.get_item(i  , lst.length) #Vector3.new(p.x, p.y, 0);
-	        atriangles.last[2] = p2.index #Extrude.get_item(i+1, lst.length) #Vector3.new(p2.x, p2.y, 0);
+	        atriangles.last[0] = p1.index 
+	        atriangles.last[1] = p.index  
+	        atriangles.last[2] = p2.index 
 		end
 
 		atriangles
 	end
 
-	def self.get_item(ai, amax)
+	def get_item(ai, amax)
 		result = ai % amax
 		result = amax + result if result < 0
 		return result
 	end
 
-	def self.point_in_traingle(pt, v1, v2, v3)
-		b1 = (Extrude.sign(pt, v1, v2) < 0)
-		b2 = (Extrude.sign(pt, v2, v3) < 0)
-		b3 = (Extrude.sign(pt, v3, v1) < 0)
+	def point_in_traingle(pt, v1, v2, v3)
+		b1 = (sign(pt, v1, v2) < 0)
+		b2 = (sign(pt, v2, v3) < 0)
+		b3 = (sign(pt, v3, v1) < 0)
 
 		return ((b1 == b2) && (b2 == b3))
 	end
 
-	def self.sign(p1, p2, p3)
+	def sign(p1, p2, p3)
 		return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y)
 	end
-	
+
 end
