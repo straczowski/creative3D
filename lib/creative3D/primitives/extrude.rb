@@ -3,8 +3,10 @@
 
 class Extrude < TriMesh
 
-
+	# vecs2 = [[0,2], ..., [3,-1]], :height => Numeric
 	def initialize (vecs2, params={})
+		raise StandardError, ":height must be Numeric" if (not params[:height].nil?) and (not params[:height].is_a? Numeric) 
+		raise StandardError, ":height must be greater than 0 " if (not params[:height].nil?) and (not params[:height] > 0)
 
 		z = params[:height].nil? ? 1 : params[:height]
 
@@ -28,11 +30,11 @@ class Extrude < TriMesh
 		end
 		vecs2.each_with_index do |v,i|
 			if( i == j-1)
-				indices << [i, 0, j+i]
-				indices << [0, j, j+i]
+				indices << [i, j+i, 0]
+				indices << [0, j+i, j]
 			else
-				indices << [i,   i+1,   j+i]
-				indices << [i+1, j+i+1, j+i] 
+				indices << [i,   j+i, i+1]
+				indices << [i+1, j+i, j+i+1] 
 			end
 		end
 

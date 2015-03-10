@@ -8,8 +8,10 @@ require "creative3D/stl"
 require "creative3D/primitives/cuboid"
 require "creative3D/primitives/cylinder"
 require "creative3D/primitives/sphere"
+require "creative3D/primitives/cone"
 require "creative3D/primitives/stick"
 require "creative3D/primitives/extrude"
+require "creative3D/primitives/rform"
 
 #require 'csg'
 
@@ -18,6 +20,14 @@ module Creative3D
 	def self.version
 		Creative3D::VERSION
 	end	
+
+	def self.test_r
+		ary = [ [0,0], [3,1], [2,4], [3,5], [1,4], [1,8] ]
+		poly = RForm.new ary
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "rform", :mesh => poly
+	end
 
 	def self.test_tri
 		ary = Array.new
@@ -31,6 +41,18 @@ module Creative3D
 
 
 	###### PRIMITIVES #######
+	def self.test_cone
+		poly = Cone.new :height => 10, :radius => 5, :segments => 5
+		poly1 = Cone.new :height => 10, :radius => 5, :segments => 360
+
+		stl = STL.new
+		stl.set_workspace("C:/ruby3d/exampleSTL/")
+		stl.write :filename => "cone", :mesh => poly
+		stl.write :filename => "cone360", :mesh => poly1
+		stl.write :filename => "cone361", :mesh => poly2
+
+	end
+
 	def self.test_stick
 		meshes = Array.new
 		vec1 = Vector3.new(0, 10, 1)
