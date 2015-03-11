@@ -18,9 +18,6 @@ class Stick < TriMesh
 		x_rot = dir.angle(cyl_dir) * 180 / Math::PI
 		z_rot = Vector3.new(dir.x, dir.y, 0).angle(Vector3.new(dir.x, 0, 0)) * 180 / Math::PI 
 
-		puts "Degree X = " + x_rot.to_s
-		puts "Degree z = " + z_rot.to_s
-
 		stick = Cylinder.new :radius => r, :height => h, :segments => s
 		stick = rotate stick, :axis => :y, :degree => x_rot, :vector => Vector3.new(0,0,0)
 		stick = rotate stick, :axis => :z, :degree => -z_rot, :vector => Vector3.new(0,0,0)
